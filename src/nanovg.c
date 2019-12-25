@@ -2676,10 +2676,11 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 			rowEnd = NULL;
 			rowWidth = 0;
 			rowMinX = rowMaxX = 0;
-		} else {
+		}
+
 			if (rowStart == NULL) {
 				// Skip white space until the beginning of the line
-				if (type == NVG_CHAR || type == NVG_CJK_CHAR) {
+				//if (type == NVG_CHAR || type == NVG_CJK_CHAR) {
 					// The current char is the row so far
 					rowStartX = iter.x;
 					rowStart = iter.str;
@@ -2694,21 +2695,21 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 					breakEnd = rowStart;
 					breakWidth = 0.0;
 					breakMaxX = 0.0;
-				}
+				//}
 			} else {
 				float nextWidth = iter.nextx - rowStartX;
 
 				// track last non-white space character
-				if (type == NVG_CHAR || type == NVG_CJK_CHAR) {
+				if (type == NVG_CHAR || type == NVG_CJK_CHAR || type == NVG_SPACE || type == NVG_NEWLINE) {
 					rowEnd = iter.next;
 					rowWidth = iter.nextx - rowStartX;
 					rowMaxX = q.x1 - rowStartX;
 				}
 				// track last end of a word
-				if (((ptype == NVG_CHAR || ptype == NVG_CJK_CHAR) && type == NVG_SPACE) || type == NVG_CJK_CHAR) {
-					breakEnd = iter.str;
-					breakWidth = rowWidth;
-					breakMaxX = rowMaxX;
+				if ((type == NVG_SPACE) || type == NVG_CJK_CHAR) {
+					breakEnd = iter.next;
+					breakWidth = iter.nextx - rowStartX;
+					breakMaxX = q.x1 - rowStartX;
 				}
 				// track last beginning of a word
 				if ((ptype == NVG_SPACE && (type == NVG_CHAR || type == NVG_CJK_CHAR)) || type == NVG_CJK_CHAR) {
@@ -2718,7 +2719,7 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 				}
 
 				// Break to new line when a character is beyond break width.
-				if ((type == NVG_CHAR || type == NVG_CJK_CHAR) && nextWidth > breakRowWidth) {
+				if (nextWidth > breakRowWidth) {
 					// The run length is too long, need to break to new line.
 					if (breakEnd == rowStart) {
 						// The current word is longer than the row length, just break it from here.
@@ -2743,7 +2744,7 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 					} else {
 						// Break the line from the end of the last word, and start new line from the beginning of the new.
 						rows[nrows].start = rowStart;
-						rows[nrows].end = breakEnd;
+						rows[nrows].end = wordStart;
 						rows[nrows].width = breakWidth * invscale;
 						rows[nrows].minx = rowMinX * invscale;
 						rows[nrows].maxx = breakMaxX * invscale;
@@ -2765,7 +2766,8 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 					breakMaxX = 0.0;
 				}
 			}
-		}
+		
+
 
 		pcodepoint = iter.codepoint;
 		ptype = type;
